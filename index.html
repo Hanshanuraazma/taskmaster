@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskMaster - Sistem Manajemen Tugas</title>
+    <style>
+        body {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100%;
+        }
+
+        html {
+            height: 100%;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100%;
+        }
+
+        .auth-container {
+            max-width: 400px;
+            margin: 50px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .main-app {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #495057;
+            border: 2px solid #dee2e6;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .task-form {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 200px 150px;
+            gap: 15px;
+            align-items: end;
+        }
+
+        .tasks-container {
+            display: grid;
+            gap: 15px;
+        }
+
+        .task-item {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .task-item:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .task-item.completed {
+            background: #f8fff8;
+            border-color: #28a745;
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .task-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #212529;
+            margin: 0;
+        }
+
+        .task-title.completed {
+            text-decoration: line-through;
+            color: #6c757d;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .priority-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .priority-high {
+            background: #dc3545;
+            color: white;
+        }
+
+        .priority-medium {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .priority-low {
+            background: #28a745;
+            color: white;
+        }
+
+        .due-date {
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 14px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            border: 2px solid #dee2e6;
+            background: white;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+            color: #495057;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #6c757d;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .task-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .task-actions {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Login/Register Form -->
+        <div id="authContainer" class="auth-container">
+            <div class="logo" style="text-align: center; margin-bottom: 30px;">
+                📋 TaskMaster
+            </div>
+            
+            <div id="loginForm">
+                <h2 style="text-align: center; margin-bottom: 30px; color: #495057;">Masuk ke Akun Anda</h2>
+                <div id="authAlert"></div>
+                <form id="loginFormElement">
+                    <div class="form-group">
+                        <label for="loginEmail" class="form-label">Email</label>
+                        <input type="email" id="loginEmail" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword" class="form-label">Password</label>
+                        <input type="password" id="loginPassword" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 15px;">Masuk</button>
+                </form>
+                <p style="text-align: center; color: #6c757d;">
+                    Belum punya akun? 
+                    <a href="#" id="showRegister" style="color: #667eea; text-decoration: none;">Daftar di sini</a>
+                </p>
+            </div>
+
+            <div id="registerForm" style="display: none;">
+                <h2 style="text-align: center; margin-bottom: 30px; color: #495057;">Buat Akun Baru</h2>
+                <div id="registerAlert"></div>
+                <form id="registerFormElement">
+                    <div class="form-group">
+                        <label for="registerName" class="form-label">Nama Lengkap</label>
+                        <input type="text" id="registerName" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerEmail" class="form-label">Email</label>
+                        <input type="email" id="registerEmail" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerPassword" class="form-label">Password</label>
+                        <input type="password" id="registerPassword" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 15px;">Daftar</button>
+                </form>
+                <p style="text-align: center; color: #6c757d;">
+                    Sudah punya akun? 
+                    <a href="#" id="showLogin" style="color: #667eea; text-decoration: none;">Masuk di sini</a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Main Application -->
+        <div id="mainApp" class="main-app">
+            <header class="header">
+                <div class="logo">📋 TaskMaster</div>
+                <div class="user-info">
+                    <span id="userName">Selamat datang!</span>
+                    <button id="logoutBtn" class="btn btn-secondary">Keluar</button>
+                </div>
+            </header>
+
+            <!-- Statistics -->
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalTasks">0</div>
+                    <div class="stat-label">Total Tugas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="completedTasks">0</div>
+                    <div class="stat-label">Selesai</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="pendingTasks">0</div>
+                    <div class="stat-label">Belum Selesai</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="overdueTasks">0</div>
+                    <div class="stat-label">Terlambat</div>
+                </div>
+            </div>
+
+            <!-- Add Task Form -->
+            <div class="task-form">
+                <h3 style="margin-bottom: 20px; color: #495057;">➕ Tambah Tugas Baru</h3>
+                <form id="taskForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="taskDescription" class="form-label">Deskripsi Tugas</label>
+                            <input type="text" id="taskDescription" class="form-control" placeholder="Masukkan deskripsi tugas..." required>
+                        </div>
+                        <div class="form-group">
+                            <label for="taskDueDate" class="form-label">Tanggal Deadline</label>
+                            <input type="date" id="taskDueDate" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="taskPriority" class="form-label">Prioritas</label>
+                            <select id="taskPriority" class="form-control" required>
+                                <option value="low">Rendah</option>
+                                <option value="medium" selected>Sedang</option>
+                                <option value="high">Tinggi</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Tambah Tugas</button>
+                </form>
+            </div>
+
+            <!-- Filter Tabs -->
+            <div class="filter-tabs">
+                <div class="tab active" data-filter="all">Semua Tugas</div>
+                <div class="tab" data-filter="pending">Belum Selesai</div>
+                <div class="tab" data-filter="completed">Selesai</div>
+                <div class="tab" data-filter="overdue">Terlambat</div>
+            </div>
+
+            <!-- Tasks Container -->
+            <div id="tasksContainer" class="tasks-container">
+                <div class="empty-state">
+                    <h3>Belum ada tugas</h3>
+                    <p>Mulai dengan menambahkan tugas pertama Anda!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Task Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>✏️ Edit Tugas</h3>
+                <button class="close" id="closeModal">&times;</button>
+            </div>
+            <form id="editTaskForm">
+                <div class="form-group">
+                    <label for="editTaskDescription" class="form-label">Deskripsi Tugas</label>
+                    <input type="text" id="editTaskDescription" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="editTaskDueDate" class="form-label">Tanggal Deadline</label>
+                    <input type="date" id="editTaskDueDate" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="editTaskPriority" class="form-label">Prioritas</label>
+                    <select id="editTaskPriority" class="form-control" required>
+                        <option value="low">Rendah</option>
+                        <option value="medium">Sedang</option>
+                        <option value="high">Tinggi</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" id="cancelEdit">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        
+        class TaskManager {
+            constructor() {
+                this.currentUser = null;
+                this.currentFilter = 'all';
+                this.editingTaskId = null;
+                this.init();
+            }
+
+            init() {
+                this.bindEvents();
+                this.checkAuthStatus();
+                this.setMinDate();
+            }
+
+           
+            bindEvents() {
+                // Auth events
+                document.getElementById('loginFormElement').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleLogin();
+                });
+
+                document.getElementById('registerFormElement').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleRegister();
+                });
+
+                document.getElementById('showRegister').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.showRegisterForm();
+                });
+
+                document.getElementById('showLogin').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.showLoginForm();
+                });
+
+                document.getElementById('logoutBtn').addEventListener('click', () => {
+                    this.handleLogout();
+                });
+
+                // Task events
+                document.getElementById('taskForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.addTask();
+                });
+
+                document.getElementById('editTaskForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.updateTask();
+                });
+
+                // Modal events
+                document.getElementById('closeModal').addEventListener('click', () => {
+                    this.closeEditModal();
+                });
+
+                document.getElementById('cancelEdit').addEventListener('click', () => {
+                    this.closeEditModal();
+                });
+
+                // Filter events
+                document.querySelectorAll('.tab').forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        this.setFilter(tab.dataset.filter);
+                    });
+                });
+            }
+
+            
+            getUsers() {
+                return JSON.parse(localStorage.getItem('taskmaster_users') || '[]');
+            }
+
+            saveUsers(users) {
+                localStorage.setItem('taskmaster_users', JSON.stringify(users));
+            }
+
+            getTasks() {
+                if (!this.currentUser) return [];
+                return JSON.parse(localStorage.getItem(`taskmaster_tasks_${this.currentUser.id}`) || '[]');
+            }
+
+            saveTasks(tasks) {
+                if (!this.currentUser) return;
+                localStorage.setItem(`taskmaster_tasks_${this.currentUser.id}`, JSON.stringify(tasks));
+            }
+
+           
+            handleLogin() {
+                const email = document.getElementById('loginEmail').value;
+                const password = document.getElementById('loginPassword').value;
+                
+                const users = this.getUsers();
+                const user = users.find(u => u.email === email && u.password === password);
+                
+                if (user) {
+                    this.currentUser = user;
+                    localStorage.setItem('taskmaster_current_user', JSON.stringify(user));
+                    this.showMainApp();
+                    this.showAlert('authAlert', 'Login berhasil!', 'success');
+                } else {
+                    this.showAlert('authAlert', 'Email atau password salah!', 'error');
+                }
+            }
+
+            handleRegister() {
+                const name = document.getElementById('registerName').value;
+                const email = document.getElementById('registerEmail').value;
+                const password = document.getElementById('registerPassword').value;
+                
+                const users = this.getUsers();
+                
+                if (users.find(u => u.email === email)) {
+                    this.showAlert('registerAlert', 'Email sudah terdaftar!', 'error');
+                    return;
+                }
+                
+                const newUser = {
+                    id: Date.now(),
+                    name,
+                    email,
+                    password,
+                    created_at: new Date().toISOString()
+                };
+                
+                users.push(newUser);
+                this.saveUsers(users);
+                
+                this.showAlert('registerAlert', 'Registrasi berhasil! Silakan login.', 'success');
+                setTimeout(() => this.showLoginForm(), 2000);
+            }
+
+            handleLogout() {
+                this.currentUser = null;
+                localStorage.removeItem('taskmaster_current_user');
+                this.showAuthForm();
+            }
+
+            // Simulasi PHP: Task CRUD operations
+            addTask() {
+                const description = document.getElementById('taskDescription').value;
+                const dueDate = document.getElementById('taskDueDate').value;
+                const priority = document.getElementById('taskPriority').value;
+                
+                const tasks = this.getTasks();
+                const newTask = {
+                    id: Date.now(),
+                    user_id: this.currentUser.id,
+                    description,
+                    due_date: dueDate,
+                    priority,
+                    status: 'pending',
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                };
+                
+                tasks.push(newTask);
+                this.saveTasks(tasks);
+                
+                document.getElementById('taskForm').reset();
+                this.setMinDate();
+                this.renderTasks();
+                this.updateStats();
+            }
+
+            updateTask() {
+                const description = document.getElementById('editTaskDescription').value;
+                const dueDate = document.getElementById('editTaskDueDate').value;
+                const priority = document.getElementById('editTaskPriority').value;
+                
+                const tasks = this.getTasks();
+                const taskIndex = tasks.findIndex(t => t.id === this.editingTaskId);
+                
+                if (taskIndex !== -1) {
+                    tasks[taskIndex] = {
+                        ...tasks[taskIndex],
+                        description,
+                        due_date: dueDate,
+                        priority,
+                        updated_at: new Date().toISOString()
+                    };
+                    
+                    this.saveTasks(tasks);
+                    this.closeEditModal();
+                    this.renderTasks();
+                    this.updateStats();
+                }
+            }
+
+            deleteTask(taskId) {
+                const tasks = this.getTasks();
+                const filteredTasks = tasks.filter(t => t.id !== taskId);
+                this.saveTasks(filteredTasks);
+                this.renderTasks();
+                this.updateStats();
+            }
+
+            toggleTaskStatus(taskId) {
+                const tasks = this.getTasks();
+                const task = tasks.find(t => t.id === taskId);
+                
+                if (task) {
+                    task.status = task.status === 'pending' ? 'completed' : 'pending';
+                    task.updated_at = new Date().toISOString();
+                    this.saveTasks(tasks);
+                    this.renderTasks();
+                    this.updateStats();
+                }
+            }
+
+            // UI Management
+            checkAuthStatus() {
+                const savedUser = localStorage.getItem('taskmaster_current_user');
+                if (savedUser) {
+                    this.currentUser = JSON.parse(savedUser);
+                    this.showMainApp();
+                } else {
+                    this.showAuthForm();
+                }
+            }
+
+            showAuthForm() {
+                document.getElementById('authContainer').style.display = 'block';
+                document.getElementById('mainApp').style.display = 'none';
+            }
+
+            showMainApp() {
+                document.getElementById('authContainer').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                document.getElementById('userName').textContent = `Halo, ${this.currentUser.name}!`;
+                this.renderTasks();
+                this.updateStats();
+            }
+
+            showLoginForm() {
+                document.getElementById('loginForm').style.display = 'block';
+                document.getElementById('registerForm').style.display = 'none';
+                this.clearAlerts();
+            }
+
+            showRegisterForm() {
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('registerForm').style.display = 'block';
+                this.clearAlerts();
+            }
+
+            showAlert(containerId, message, type) {
+                const container = document.getElementById(containerId);
+                container.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+                setTimeout(() => container.innerHTML = '', 5000);
+            }
+
+            clearAlerts() {
+                document.getElementById('authAlert').innerHTML = '';
+                document.getElementById('registerAlert').innerHTML = '';
+            }
+
+            setMinDate() {
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('taskDueDate').min = today;
+                document.getElementById('editTaskDueDate').min = today;
+            }
+
+            // Task Rendering
+            renderTasks() {
+                const tasks = this.getTasks();
+                const filteredTasks = this.filterTasks(tasks);
+                const container = document.getElementById('tasksContainer');
+                
+                if (filteredTasks.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <h3>Tidak ada tugas</h3>
+                            <p>${this.getEmptyMessage()}</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = filteredTasks.map(task => this.renderTaskItem(task)).join('');
+            }
+
+            renderTaskItem(task) {
+                const isOverdue = new Date(task.due_date) < new Date() && task.status === 'pending';
+                const priorityClass = `priority-${task.priority}`;
+                const priorityText = {
+                    'low': 'Rendah',
+                    'medium': 'Sedang',
+                    'high': 'Tinggi'
+                }[task.priority];
+                
+                return `
+                    <div class="task-item ${task.status}">
+                        <div class="task-header">
+                            <h4 class="task-title ${task.status}">${task.description}</h4>
+                            <div class="task-actions">
+                                <button class="btn btn-sm ${task.status === 'pending' ? 'btn-success' : 'btn-secondary'}" 
+                                        onclick="taskManager.toggleTaskStatus(${task.id})">
+                                    ${task.status === 'pending' ? '✓ Selesai' : '↺ Batal'}
+                                </button>
+                                <button class="btn btn-sm btn-secondary" onclick="taskManager.editTask(${task.id})">
+                                    ✏️ Edit
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="taskManager.confirmDelete(${task.id})">
+                                    🗑️ Hapus
+                                </button>
+                            </div>
+                        </div>
+                        <div class="task-meta">
+                            <span class="priority-badge ${priorityClass}">${priorityText}</span>
+                            <span class="due-date">
+                                📅 ${new Date(task.due_date).toLocaleDateString('id-ID')}
+                                ${isOverdue ? '<span style="color: #dc3545; font-weight: bold;">(Terlambat)</span>' : ''}
+                            </span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Task Management
+            editTask(taskId) {
+                const tasks = this.getTasks();
+                const task = tasks.find(t => t.id === taskId);
+                
+                if (task) {
+                    this.editingTaskId = taskId;
+                    document.getElementById('editTaskDescription').value = task.description;
+                    document.getElementById('editTaskDueDate').value = task.due_date;
+                    document.getElementById('editTaskPriority').value = task.priority;
+                    document.getElementById('editModal').style.display = 'block';
+                }
+            }
+
+            confirmDelete(taskId) {
+                const tasks = this.getTasks();
+                const task = tasks.find(t => t.id === taskId);
+                
+                if (task) {
+                    // Simulasi confirm dialog dengan UI inline
+                    const taskElement = event.target.closest('.task-item');
+                    const originalContent = taskElement.innerHTML;
+                    
+                    taskElement.innerHTML = `
+                        <div style="text-align: center; padding: 20px;">
+                            <h4 style="color: #dc3545; margin-bottom: 15px;">Hapus tugas ini?</h4>
+                            <p style="margin-bottom: 20px;">"${task.description}"</p>
+                            <button class="btn btn-danger btn-sm" onclick="taskManager.deleteTask(${taskId})">Ya, Hapus</button>
+                            <button class="btn btn-secondary btn-sm" onclick="taskManager.renderTasks()" style="margin-left: 10px;">Batal</button>
+                        </div>
+                    `;
+                }
+            }
+
+            closeEditModal() {
+                document.getElementById('editModal').style.display = 'none';
+                this.editingTaskId = null;
+            }
+
+            // Filtering and Statistics
+            setFilter(filter) {
+                this.currentFilter = filter;
+                
+                document.querySelectorAll('.tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                
+                document.querySelector(`[data-filter="${filter}"]`).classList.add('active');
+                this.renderTasks();
+            }
+
+            filterTasks(tasks) {
+                const now = new Date();
+                
+                switch (this.currentFilter) {
+                    case 'pending':
+                        return tasks.filter(t => t.status === 'pending');
+                    case 'completed':
+                        return tasks.filter(t => t.status === 'completed');
+                    case 'overdue':
+                        return tasks.filter(t => t.status === 'pending' && new Date(t.due_date) < now);
+                    default:
+                        return tasks;
+                }
+            }
+
+            getEmptyMessage() {
+                switch (this.currentFilter) {
+                    case 'pending':
+                        return 'Semua tugas sudah selesai! 🎉';
+                    case 'completed':
+                        return 'Belum ada tugas yang diselesaikan.';
+                    case 'overdue':
+                        return 'Tidak ada tugas yang terlambat.';
+                    default:
+                        return 'Mulai dengan menambahkan tugas pertama Anda!';
+                }
+            }
+
+            updateStats() {
+                const tasks = this.getTasks();
+                const now = new Date();
+                
+                const total = tasks.length;
+                const completed = tasks.filter(t => t.status === 'completed').length;
+                const pending = tasks.filter(t => t.status === 'pending').length;
+                const overdue = tasks.filter(t => t.status === 'pending' && new Date(t.due_date) < now).length;
+                
+                document.getElementById('totalTasks').textContent = total;
+                document.getElementById('completedTasks').textContent = completed;
+                document.getElementById('pendingTasks').textContent = pending;
+                document.getElementById('overdueTasks').textContent = overdue;
+            }
+        }
+
+        // Initialize the application
+        const taskManager = new TaskManager();
+
+        // Close modal when clicking outside
+        window.addEventListener('click', (e) => {
+            const modal = document.getElementById('editModal');
+            if (e.target === modal) {
+                taskManager.closeEditModal();
+            }
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99529128b68dfcee',t:'MTc2MTU3MjAyNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
